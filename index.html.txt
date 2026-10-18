@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منصة تسويق الطاقة الشمسية والأنظمة الأمنية</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; }
+    .thumb-active { border: 2px solid #f59e0b; transform: scale(1.05); }
+    .zoom-box { overflow: hidden; position: relative; cursor: zoom-in; }
+    .zoom-box img { transition: transform 0.3s ease; }
+    .zoom-box:hover img { transform: scale(1.65); }
+  </style>
+</head>
+<body class="pb-24" onclick="closeDropdownOutside(event)">
+
+  <!-- الشريط العلوي (Header) مع القائمة المنسدلة -->
+  <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center gap-3 relative">
+      
+      <!-- الشعار واسم المنصة -->
+      <div class="flex items-center gap-3">
+        <img id="headerLogo" src="https://cdn-icons-png.flaticon.com/512/3103/3103446.png" alt="Logo" class="w-11 h-11 rounded-xl bg-white p-1 object-contain border-2 border-amber-400">
+        <div>
+          <h1 id="headerTitle" class="text-sm sm:text-lg md:text-xl font-extrabold text-amber-400 leading-tight">منصة تسويق الطاقة الشمسية والأنظمة الأمنية</h1>
+          <p class="text-[11px] text-slate-300">منظومات طاقة شمسية • كاميرات مراقبة • أجهزة إنذار مبكر</p>
+        </div>
+      </div>
+
+      <!-- القائمة المنسدلة (☰ القائمة) -->
+      <div class="relative" id="topMenuContainer">
+        <button onclick="toggleTopDropdown(event)" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white px-3.5 py-2 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-bold shadow relative">
+          <i class="fa-solid fa-bars text-amber-400 text-base"></i>
+          <span>القائمة</span>
+          <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+          <!-- شارة تنبيه المدير -->
+          <span id="pendingBadge" class="hidden absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+        </button>
+
+        <!-- محتويات القائمة المنسدلة -->
+        <div id="topDropdownMenu" class="hidden absolute left-0 mt-2 w-64 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 overflow-hidden text-xs">
+          
+          <!-- حالة المشترك المسجل الدخول -->
+          <div id="subActiveBox" class="hidden bg-emerald-50 border-b border-emerald-200 px-4 py-2.5 mb-1">
+            <div id="subActiveName" class="font-extrabold text-emerald-900 text-xs"></div>
+            <div id="subActiveRole" class="text-[11px] text-emerald-700 font-semibold"></div>
+            <button onclick="logoutSubscriber()" class="mt-1.5 w-full bg-red-600 hover:bg-red-700 text-white py-1 rounded-lg font-bold text-[11px]">
+              <i class="fa-solid fa-right-from-bracket ml-1"></i>تسجيل الخروج
+            </button>
+          </div>
+
+          <button onclick="openModalFromMenu('subscriberModal')" class="w-full text-right px-4 py-2.5 hover:bg-slate-100 flex items-center gap-2.5 font-bold text-slate-700">
+            <i class="fa-solid fa-user-check text-emerald-600 text-sm w-5 text-center"></i>
+            <span>بوابة المشتركين (مركّب / محل)</span>
+          </button>
+
+          <button onclick="promptAdminLogin()" class="w-full text-right px-4 py-2.5 hover:bg-slate-100 flex items-center justify-between font-bold text-slate-700 border-t border-slate-100">
+            <div class="flex items-center gap-2.5">
+              <i class="fa-solid fa-user-shield text-amber-500 text-sm w-5 text-center"></i>
+              <span>لوحة المدير (محمية بكلمة سر)</span>
+            </div>
+            <span id="menuPendingCount" class="hidden bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">0</span>
+          </button>
+
+          <button onclick="openModalFromMenu('historyModal')" class="w-full text-right px-4 py-2.5 hover:bg-slate-100 flex items-center gap-2.5 font-bold text-slate-700 border-t border-slate-100">
+            <i class="fa-solid fa-clock-rotate-left text-blue-600 text-sm w-5 text-center"></i>
+            <span>أرشيف فترات الأسعار بالتاريخ</span>
+          </button>
+
+          <button onclick="openModalFromMenu('qrModal')" class="w-full text-right px-4 py-2.5 hover:bg-slate-100 flex items-center gap-2.5 font-bold text-slate-700 border-t border-slate-100">
+            <i class="fa-solid fa-qrcode text-purple-600 text-sm w-5 text-center"></i>
+            <span>باركود الدخول المباشر (QR)</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- واجهة المتجر الرئيسية -->
+  <main id="storeView" class="max-w-7xl mx-auto px-4 py-5">
+    <!-- الفلترة والبحث -->
+    <div class="bg-white p-3.5 rounded-xl shadow-sm mb-5 flex flex-col md:flex-row gap-3 justify-between items-center border">
+      <div class="flex gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+        <button onclick="filterCategory('all')" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap">جميع الأصناف</button>
+        <button onclick="filterCategory('solar')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap"><i class="fa-solid fa-solar-panel text-amber-500 ml-1"></i> الطاقة الشمسية</button>
+        <button onclick="filterCategory('cctv')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap"><i class="fa-solid fa-video text-blue-500 ml-1"></i> كاميرات المراقبة</button>
+        <button onclick="filterCategory('alarm')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap"><i class="fa-solid fa-bell text-red-500 ml-1"></i> أجهزة الإنذار المبكر</button>
+      </div>
+      <div class="relative w-full md:w-72">
+        <input type="text" id="searchInput" oninput="renderProducts()" placeholder="ابحث عن صنف، انفرتر، بطارية..." class="w-full border border-slate-300 rounded-lg pr-9 pl-3 py-2 text-xs focus:outline-none focus:border-amber-500">
+        <i class="fa-solid fa-magnifying-glass absolute right-3 top-2.5 text-slate-400"></i>
+      </div>
+    </div>
+
+    <!-- شبكة عرض المنتجات -->
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+  </main>
+
+  <!-- لوحة تحكم مدير المنصة (محمية بكلمة سر المدير) -->
+  <section id="adminView" class="hidden max-w-6xl mx-auto px-4 py-5 space-y-6">
+    <div class="bg-white rounded-2xl shadow-md p-5 border">
+      <div class="flex justify-between items-center border-b pb-3 mb-5">
+        <h2 class="text-base md:text-lg font-extrabold text-slate-800">
+          <i class="fa-solid fa-user-shield text-amber-500 ml-2"></i>لوحة تحكم مدير المنصة (مسؤول النظام فقط)
+        </h2>
+        <button onclick="toggleAdminView()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold">العودة لواجهة التسوق</button>
+      </div>
+
+      <!-- 1. إدارة المشتركين والقبول الإلزامي -->
+      <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <h3 class="font-extrabold text-slate-800 mb-3 text-xs md:text-sm flex items-center gap-2">
+          <i class="fa-solid fa-users-gear text-emerald-600"></i>
+          <span>طلبات المشتركين (المركّبين وأصحاب المحلات — يتطلب تأكيد وقبول المدير لتفعيل الحساب)</span>
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-right text-xs border-collapse bg-white rounded-lg overflow-hidden">
+            <thead>
+              <tr class="bg-slate-800 text-white">
+                <th class="p-2 border">الفئة</th>
+                <th class="p-2 border">الاسم الكامل</th>
+                <th class="p-2 border">اسم المحل والتأكيد</th>
+                <th class="p-2 border">العنوان</th>
+                <th class="p-2 border">الهاتف</th>
+                <th class="p-2 border">الحالة</th>
+                <th class="p-2 border text-center">إجراء المدير</th>
+              </tr>
+            </thead>
+            <tbody id="subscribersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. الشعار وإعدادات الدفع وكلمة سر المدير -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 bg-amber-50/50 p-4 rounded-xl border border-amber-200">
+        <div>
+          <h3 class="font-extrabold text-slate-800 mb-2 text-sm"><i class="fa-solid fa-lock text-amber-600 ml-1"></i> كلمة سر المدير والأمان والشعار</h3>
+          
+          <label class="block text-xs font-bold mb-1">كلمة سر لوحة المدير السرية:</label>
+          <input type="text" id="adminPasswordInput" class="w-full border rounded-lg p-2 text-xs mb-3 bg-white font-mono" placeholder="كلمة سر المدير...">
+
+          <label class="block text-xs font-bold mb-1">اسم المنصة:</label>
+          <input type="text" id="adminStoreName" class="w-full border rounded-lg p-2 text-xs mb-2 bg-white">
+          
+          <label class="block text-xs font-bold mb-1">رقم واتساب الإدارة:</label>
+          <input type="text" id="adminPhone" class="w-full border rounded-lg p-2 text-xs mb-3 bg-white">
+
+          <div class="bg-white p-3 rounded-xl border border-amber-300">
+            <label class="block text-xs font-extrabold text-amber-900 mb-1">تغيير الشعار (anWriter):</label>
+            <div class="flex gap-2">
+              <input type="text" id="adminLogoUrl" placeholder="logo.png أو رابط الصورة..." class="flex-1 border rounded-lg p-2 text-xs bg-slate-50">
+              <button onclick="applyLogoFromText()" class="bg-slate-900 text-amber-400 px-3 py-1.5 rounded-lg text-xs font-bold">تطبيق</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-extrabold text-slate-800 mb-2 text-sm"><i class="fa-solid fa-wallet text-emerald-600 ml-1"></i> طرق الدفع (شام كاش / مصاري / الخ)</h3>
+          <label class="block text-xs font-bold mb-1">حساب شام كاش (Sham Cash):</label>
+          <input type="text" id="adminShamCash" class="w-full border rounded-lg p-2 text-xs mb-2 bg-white">
+          
+          <label class="block text-xs font-bold mb-1">محفظة مصاري (Masari):</label>
+          <input type="text" id="adminMasari" class="w-full border rounded-lg p-2 text-xs mb-2 bg-white">
+          
+          <label class="block text-xs font-bold mb-1">طرق دفع أخرى (الهرم / USDT):</label>
+          <input type="text" id="adminOtherPay" class="w-full border rounded-lg p-2 text-xs mb-4 bg-white">
+          
+          <button onclick="saveStoreSettings()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 rounded-xl text-xs shadow">
+            <i class="fa-solid fa-floppy-disk ml-1"></i> حفظ إعدادات المدير والشعار والدفع
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. الأسعار وإضافة منتج -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="bg-slate-50 p-4 rounded-xl border">
+          <h3 class="font-extrabold text-slate-800 mb-3 text-xs md:text-sm"><i class="fa-solid fa-tags text-amber-600 ml-1"></i> تحديث السعر وأرشيف الفترات</h3>
+          <label class="block text-xs font-bold mb-1">اختر المنتج:</label>
+          <select id="editProdSelect" onchange="loadProductForEdit()" class="w-full border rounded-lg p-2 text-xs bg-white mb-3"></select>
+
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">مفرق ($)</label>
+              <input type="number" id="editRetailPrice" class="w-full border rounded-lg p-2 text-xs bg-white">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-blue-700 mb-1">مركّب ($)</label>
+              <input type="number" id="editInstallerPrice" class="w-full border rounded-lg p-2 text-xs bg-white">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-emerald-700 mb-1">محل ($)</label>
+              <input type="number" id="editShopPrice" class="w-full border rounded-lg p-2 text-xs bg-white">
+            </div>
+          </div>
+
+          <label class="block text-xs font-bold mb-1">تاريخ بدء السعر الجديد:</label>
+          <input type="date" id="editEffectiveDate" class="w-full border rounded-lg p-2 text-xs bg-white mb-3">
+
+          <button onclick="updateProductPriceWithPeriod()" class="w-full bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold py-2.5 rounded-lg text-xs">
+            <i class="fa-solid fa-clock-rotate-left ml-1"></i> اعتماد السعر وحفظ الأرشيف
+          </button>
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-xl border">
+          <h3 class="font-extrabold text-slate-800 mb-3 text-xs md:text-sm"><i class="fa-solid fa-box-open text-blue-600 ml-1"></i> إضافة منتج جديد</h3>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <input type="text" id="newProdName" placeholder="اسم المنتج..." class="border rounded-lg p-2 text-xs bg-white">
+            <select id="newProdCat" class="border rounded-lg p-2 text-xs bg-white">
+              <option value="solar">طاقة شمسية</option>
+              <option value="cctv">كاميرات مراقبة</option>
+              <option value="alarm">إنذار مبكر</option>
+            </select>
+          </div>
+          <input type="text" id="newProdDesc" placeholder="المواصفات الفنية..." class="w-full border rounded-lg p-2 text-xs bg-white mb-2">
+          <div class="grid grid-cols-3 gap-2 mb-2">
+            <input type="number" id="newProdRetail" placeholder="مفرق $" class="border rounded-lg p-2 text-xs bg-white">
+            <input type="number" id="newProdInstaller" placeholder="مركّب $" class="border rounded-lg p-2 text-xs bg-white">
+            <input type="number" id="newProdShop" placeholder="محل $" class="border rounded-lg p-2 text-xs bg-white">
+          </div>
+          <input type="text" id="newProdImgLinks" placeholder="روابط أو أسماء الصور (مثل img1.jpg, img2.jpg)" class="w-full border rounded-lg p-2 text-xs bg-white mb-3">
+          <button onclick="addNewProduct()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs">
+            <i class="fa-solid fa-plus ml-1"></i> إضافة المنتج للمنصة
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- نافذة بوابة المشتركين (كلمة سر خاصة بكل مركب أو صاحب محل) -->
+  <div id="subscriberModal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 relative max-h-[92vh] overflow-y-auto">
+      <button onclick="closeModal('subscriberModal')" class="absolute top-4 left-4 bg-slate-200 w-8 h-8 rounded-full font-bold">✕</button>
+      <h3 class="text-base md:text-lg font-extrabold text-slate-800 mb-1"><i class="fa-solid fa-id-card-clip text-emerald-600 ml-2"></i>بوابة المشتركين (مركّب / صاحب محل)</h3>
+      <p class="text-xs text-slate-500 mb-4">يتطلب تفعيل الحساب موافقة وتأكيد مدير المنصة حصرياً</p>
+
+      <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl mb-4 text-xs font-bold">
+        <button onclick="switchSubTab('register')" id="tabRegBtn" class="bg-white text-slate-900 py-2 rounded-lg shadow-sm">طلب اشتراك جديد</button>
+        <button onclick="switchSubTab('login')" id="tabLoginBtn" class="text-slate-600 py-2 rounded-lg">تسجيل الدخول</button>
+      </div>
+
+      <!-- استمارة الاشتراك -->
+      <div id="subRegisterForm" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">حدد فئتك:</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="border rounded-xl p-2.5 flex items-center gap-2 cursor-pointer bg-slate-50">
+              <input type="radio" name="subRole" value="installer" checked onchange="toggleSubRoleFields()">
+              <span class="font-bold text-blue-800"><i class="fa-solid fa-screwdriver-wrench ml-1"></i>فني مركّب</span>
+            </label>
+            <label class="border rounded-xl p-2.5 flex items-center gap-2 cursor-pointer bg-slate-50">
+              <input type="radio" name="subRole" value="shop" onchange="toggleSubRoleFields()">
+              <span class="font-bold text-emerald-800"><i class="fa-solid fa-store ml-1"></i>صاحب محل</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">الاسم الكامل: *</label>
+          <input type="text" id="regFullName" placeholder="الاسم الكامل..." class="w-full border rounded-lg p-2.5">
+        </div>
+
+        <!-- حقول صاحب المحل (اسم المحل ورقم التأكيد) -->
+        <div id="shopExtraFields" class="hidden bg-emerald-50 p-3 rounded-xl border border-emerald-200 space-y-2">
+          <div class="font-bold text-emerald-900 text-[11px]">بيانات تأكيد المحل التجاري (للتحقق من قبل المدير):</div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">اسم المحل التجاري: *</label>
+            <input type="text" id="regShopName" placeholder="اسم المحل..." class="w-full border rounded-lg p-2 bg-white">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">رقم خاص للتأكيد والتواصل: *</label>
+            <input type="text" id="regShopVerifyPhone" placeholder="رقم هاتف تأكيد المحل..." class="w-full border rounded-lg p-2 bg-white">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">العنوان الكامل: *</label>
+          <input type="text" id="regAddress" placeholder="المدينة - الحي - الشارع..." class="w-full border rounded-lg p-2.5">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">رقم الهاتف: *</label>
+          <input type="text" id="regPhone" placeholder="09XXXXXXXX" class="w-full border rounded-lg p-2.5">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">كلمة السر الخاصة بحسابك: *</label>
+          <input type="password" id="regPassword" placeholder="كلمة السر لحسابك..." class="w-full border rounded-lg p-2.5 font-mono">
+        </div>
+
+        <button onclick="registerSubscriber()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl shadow">
+          إرسال طلب الاشتراك (بانتظار موافقة المدير)
+        </button>
+      </div>
+
+      <!-- تسجيل الدخول للمشترك -->
+      <div id="subLoginForm" class="hidden space-y-3 text-xs">
+        <p class="text-slate-600">أدخل رقم هاتفك وكلمة السر الخاصة بك:</p>
+        <input type="text" id="loginPhoneInput" placeholder="رقم الهاتف المسجل..." class="w-full border rounded-lg p-2.5 text-sm">
+        <input type="password" id="loginPasswordInput" placeholder="كلمة السر الخاصة بك..." class="w-full border rounded-lg p-2.5 text-sm font-mono">
+        
+        <button onclick="loginSubscriber()" class="w-full bg-slate-900 hover:bg-slate-800 text-amber-400 font-extrabold py-3 rounded-xl">
+          تسجيل الدخول
+        </button>
+        <div class="bg-slate-50 p-2.5 rounded-lg border text-[11px] text-slate-500">
+          <strong>حسابات تجريبية جاهزة:</strong><br>
+          • مركّب (كلمة سر <code>1234</code>): هاتف <code>0911111111</code><br>
+          • محل مقبول (كلمة سر <code>1234</code>): هاتف <code>0922222222</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة معرض الصور (Amazon Style) -->
+  <div id="productModal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-5 relative">
+      <button onclick="closeModal('productModal')" class="absolute top-4 left-4 bg-slate-200 hover:bg-red-500 hover:text-white w-8 h-8 rounded-full font-bold">✕</button>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+        <div>
+          <div class="zoom-box border rounded-xl bg-slate-50 h-64 sm:h-72 flex items-center justify-center mb-3" onclick="openFullImage()">
+            <img id="modalMainImg" src="" alt="Product" class="max-h-full max-w-full object-contain">
+            <span class="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded">اضغط لتكبير الصورة</span>
+          </div>
+          <div class="text-xs font-bold text-slate-500 mb-1">الصور الفرعية:</div>
+          <div id="modalThumbnails" class="flex gap-2 overflow-x-auto py-1"></div>
+        </div>
+        <div class="flex flex-col justify-between">
+          <div>
+            <span id="modalCategory" class="text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded font-bold"></span>
+            <h2 id="modalTitle" class="text-lg md:text-xl font-extrabold text-slate-900 mt-2 mb-2"></h2>
+            <p id="modalDesc" class="text-xs md:text-sm text-slate-600 mb-4 leading-relaxed"></p>
+            <div id="modalPriceBox" class="bg-slate-50 p-4 rounded-xl border mb-4"></div>
+          </div>
+          <button id="modalAddBtn" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold py-3 rounded-xl shadow flex items-center justify-center gap-2 text-sm">
+            <i class="fa-solid fa-cart-plus"></i> أضف إلى السلة
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- أرشيف الأسعار -->
+  <div id="historyModal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-5 relative max-h-[90vh] overflow-y-auto">
+      <button onclick="closeModal('historyModal')" class="absolute top-4 left-4 bg-slate-200 w-8 h-8 rounded-full font-bold">✕</button>
+      <h3 class="text-base md:text-lg font-extrabold text-slate-800 mb-2"><i class="fa-solid fa-clock-rotate-left text-amber-500 ml-2"></i>أرشيف فترات أسعار المنتجات حسب التاريخ</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 bg-slate-50 p-3 rounded-xl border">
+        <div>
+          <label class="text-xs font-bold block mb-1">اختر المنتج:</label>
+          <select id="historyProdSelect" onchange="renderPriceHistoryPeriods()" class="w-full border rounded-lg p-2 text-xs bg-white"></select>
+        </div>
+        <div>
+          <label class="text-xs font-bold block mb-1">ابحث عن السعر في تاريخ معين:</label>
+          <input type="date" id="historyDateQuery" onchange="renderPriceHistoryPeriods()" class="w-full border rounded-lg p-2 text-xs bg-white">
+        </div>
+      </div>
+      <div id="historyQueryResult" class="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs font-bold text-slate-800"></div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-right text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-900 text-white">
+              <th class="p-2 border">الفترة (من تاريخ ⬅ إلى تاريخ)</th>
+              <th class="p-2 border">مفرق</th>
+              <th class="p-2 border">مركّب</th>
+              <th class="p-2 border">محل</th>
+              <th class="p-2 border">الحالة</th>
+            </tr>
+          </thead>
+          <tbody id="historyPeriodsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- باركود QR -->
+  <div id="qrModal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xs w-full p-6 text-center relative">
+      <button onclick="closeModal('qrModal')" class="absolute top-4 left-4 bg-slate-200 w-8 h-8 rounded-full font-bold">✕</button>
+      <h3 class="text-base font-extrabold text-slate-800 mb-2">باركود المنصة (QR)</h3>
+      <div class="bg-slate-50 p-3 rounded-xl border inline-block mb-3">
+        <img id="platformQrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://example.com" alt="QR" class="w-44 h-44 mx-auto">
+      </div>
+      <p id="qrStoreName" class="font-bold text-slate-800 text-xs"></p>
+    </div>
+  </div>
+
+  <!-- السلة والدفع -->
+  <div id="cartModal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-5 relative max-h-[92vh] overflow-y-auto">
+      <button onclick="closeModal('cartModal')" class="absolute top-4 left-4 bg-slate-200 w-8 h-8 rounded-full font-bold">✕</button>
+      <h3 class="text-base md:text-lg font-extrabold text-slate-800 mb-3"><i class="fa-solid fa-basket-shopping text-amber-500 ml-2"></i>سلة المشتريات وإتمام الدفع</h3>
+      <div id="cartItemsList" class="space-y-2 mb-4 max-h-48 overflow-y-auto"></div>
+      <div class="border-t pt-3 mb-3 flex justify-between items-center font-extrabold text-sm">
+        <span>المجموع الكلي:</span>
+        <span id="cartTotalAmount" class="text-emerald-600 text-lg">0 $</span>
+      </div>
+
+      <div class="bg-slate-50 p-3 rounded-xl border mb-3">
+        <label class="block text-xs font-bold text-slate-700 mb-1">طريقة الدفع:</label>
+        <select id="paymentMethod" onchange="togglePaymentBox()" class="w-full border rounded-lg p-2 text-xs font-bold bg-white mb-2">
+          <option value="شام كاش (Sham Cash)">شام كاش (Sham Cash)</option>
+          <option value="مصاري (Masari)">مصاري (Masari)</option>
+          <option value="حوالة (الهرم / الفؤاد / USDT)">حوالة (الهرم / الفؤاد / USDT)</option>
+          <option value="نقداً عند الاستلام">نقداً عند الاستلام</option>
+        </select>
+        <div id="payInstructionBox" class="bg-amber-50 border border-amber-200 p-2.5 rounded-lg text-xs space-y-2">
+          <div id="payAccountText" class="font-bold text-amber-900"></div>
+          <input type="text" id="transferNumber" placeholder="رقم إشعار التحويل..." class="w-full border rounded p-2 text-xs bg-white">
+        </div>
+      </div>
+
+      <div class="space-y-2 mb-4 text-xs">
+        <input type="text" id="orderCustName" placeholder="الاسم الكامل..." class="w-full border rounded-lg p-2.5">
+        <input type="text" id="orderCustAddress" placeholder="العنوان..." class="w-full border rounded-lg p-2.5">
+        <input type="text" id="orderCustPhone" placeholder="الهاتف..." class="w-full border rounded-lg p-2.5">
+      </div>
+
+      <button onclick="sendWhatsAppOrder()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg text-xs sm:text-sm">
+        <i class="fa-brands fa-whatsapp text-lg"></i> إرسال الطلب وتأكيد الدفع عبر واتساب
+      </button>
+    </div>
+  </div>
+
+  <!-- الشريط السفلي للسلة -->
+  <div class="fixed bottom-0 inset-x-0 bg-white border-t shadow-2xl p-3 z-30">
+    <div class="max-w-7xl mx-auto flex justify-between items-center px-2">
+      <div>
+        <span class="text-xs text-slate-500 block">السلة (<span id="cartCount">0</span> قطع)</span>
+        <span id="bottomTotal" class="font-extrabold text-lg text-slate-900">0 $</span>
+      </div>
+      <button onclick="openModal('cartModal')" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold px-5 py-2.5 rounded-xl shadow flex items-center gap-2 text-xs sm:text-sm">
+        <i class="fa-solid fa-cart-shopping"></i> عرض السلة والدفع
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // إعدادات المنصة وكلمة سر المدير الافتراضية (admin123)
+    let storeSettings = JSON.parse(localStorage.getItem('solar_settings')) || {
+      name: "منصة تسويق الطاقة الشمسية والأنظمة الأمنية",
+      phone: "963900000000",
+      logo: "https://cdn-icons-png.flaticon.com/512/3103/3103446.png",
+      shamCash: "SC-10203040",
+      masari: "MS-50607080",
+      otherPay: "شركة الهرم أو الفؤاد أو USDT TRC20",
+      adminPassword: "admin123"
+    };
+
+    let currentSubscriber = null;
+    let currentCategory = 'all';
+    let cart = [];
+
+    let subscribers = JSON.parse(localStorage.getItem('solar_subscribers')) || [
+      { id: 1, role: 'installer', fullName: 'أحمد العلي', shopName: '-', verifyPhone: '-', address: 'القامشلي', phone: '0911111111', password: '1234', status: 'approved' },
+      { id: 2, role: 'shop', fullName: 'محمد الحسن', shopName: 'مؤسسة النور للطاقة', verifyPhone: '0922222229', address: 'القامشلي', phone: '0922222222', password: '1234', status: 'approved' },
+      { id: 3, role: 'shop', fullName: 'خالد ابراهيم', shopName: 'محل الأمان للكاميرات', verifyPhone: '0933333339', address: 'الحسكة', phone: '0933333333', password: '1234', status: 'pending' }
+    ];
+
+    let products = JSON.parse(localStorage.getItem('solar_products')) || [
+      {
+        id: 1,
+        category: 'solar',
+        catName: 'طاقة شمسية',
+        name: 'انفرتر هجين Deye 6.6kW نظام 48V ذكي',
+        desc: 'انفرتر هجين أصلي يدعم الربط مع بطاريات الليثيوم عبر BMS RS485/CAN، شاشة لمس ملونة.',
+        prices: { retail: 820, installer: 785, shop: 755 },
+        images: [
+          'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600',
+          'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=600'
+        ],
+        pricePeriods: [
+          { from: '2026-08-01', to: '2026-09-15', retail: 860, installer: 825, shop: 795 },
+          { from: '2026-09-15', to: 'الآن (السعر الحالي)', retail: 820, installer: 785, shop: 755 }
+        ]
+      },
+      {
+        id: 2,
+        category: 'solar',
+        catName: 'طاقة شمسية',
+        name: 'بطارية ليثيوم LiFePO4 سعة 16kWh نظام 51.2V',
+        desc: 'بطارية ليثيوم فوسفات الحديد عمر 6000 دورة شحن مع بروتوكول BMS.',
+        prices: { retail: 1650, installer: 1580, shop: 1520 },
+        images: [
+          'https://images.unsplash.com/photo-1620714223084-8fcacc6dfd8d?w=600'
+        ],
+        pricePeriods: [
+          { from: '2026-08-10', to: 'الآن (السعر الحالي)', retail: 1650, installer: 1580, shop: 1520 }
+        ]
+      }
+    ];
+
+    function saveDataToStorage() {
+      localStorage.setItem('solar_settings', JSON.stringify(storeSettings));
+      localStorage.setItem('solar_subscribers', JSON.stringify(subscribers));
+      localStorage.setItem('solar_products', JSON.stringify(products));
+    }
+
+    // القائمة المنسدلة
+    function toggleTopDropdown(e) {
+      e.stopPropagation();
+      document.getElementById('topDropdownMenu').classList.toggle('hidden');
+    }
+
+    function closeDropdownOutside(e) {
+      const container = document.getElementById('topMenuContainer');
+      if (container && !container.contains(e.target)) {
+        document.getElementById('topDropdownMenu').classList.add('hidden');
+      }
+    }
+
+    function openModalFromMenu(modalId) {
+      document.getElementById('topDropdownMenu').classList.add('hidden');
+      openModal(modalId);
+    }
+
+    // طلب كلمة سر المدير للوصول للوحة الإدارة
+    function promptAdminLogin() {
+      document.getElementById('topDropdownMenu').classList.add('hidden');
+      const pass = prompt("أدخل كلمة سر مدير المنصة:");
+      if (pass === storeSettings.adminPassword) {
+        document.getElementById('storeView').classList.add('hidden');
+        document.getElementById('adminView').classList.remove('hidden');
+        loadSettingsToUI();
+        renderSubscribersAdminTable();
+        initSelectBoxes();
+      } else if (pass !== null) {
+        alert("كلمة سر المدير غير صحيحة! الوصول مرفوض.");
+      }
+    }
+
+    // تحديد السعر حسب المشترك أو الزبون
+    function getActivePrice(product) {
+      if (currentSubscriber && currentSubscriber.status === 'approved') {
+        if (currentSubscriber.role === 'installer') return product.prices.installer;
+        if (currentSubscriber.role === 'shop') return product.prices.shop;
+      }
+      return product.prices.retail;
+    }
+
+    function getActivePriceLabel() {
+      if (currentSubscriber && currentSubscriber.status === 'approved') {
+        return currentSubscriber.role === 'installer' ? 'سعر المركّب' : 'سعر المحل';
+      }
+      return 'السعر';
+    }
+
+    // عرض المنتجات
+    function renderProducts() {
+      const grid = document.getElementById('productsGrid');
+      const search = document.getElementById('searchInput').value.trim().toLowerCase();
+      grid.innerHTML = '';
+
+      const filtered = products.filter(p => {
+        const matchCat = currentCategory === 'all' || p.category === currentCategory;
+        const matchSearch = p.name.toLowerCase().includes(search) || p.desc.toLowerCase().includes(search);
+        return matchCat && matchSearch;
+      });
+
+      filtered.forEach(p => {
+        const activePrice = getActivePrice(p);
+        const priceLabel = getActivePriceLabel();
+        const lastPeriod = p.pricePeriods[p.pricePeriods.length - 1];
+
+        grid.innerHTML += `
+          <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition border overflow-hidden flex flex-col justify-between">
+            <div>
+              <div class="relative h-52 bg-slate-100 cursor-pointer" onclick="openProductGallery(${p.id})">
+                <img src="${p.images[0]}" class="w-full h-full object-cover" alt="${p.name}">
+                <span class="absolute top-2 right-2 bg-slate-900/85 text-amber-400 text-xs px-2.5 py-1 rounded-full font-bold">${p.catName}</span>
+              </div>
+              <div class="p-4">
+                <h3 onclick="openProductGallery(${p.id})" class="font-extrabold text-slate-800 text-sm md:text-base mb-1 cursor-pointer hover:text-amber-600">${p.name}</h3>
+                <p class="text-xs text-slate-500 line-clamp-2">${p.desc}</p>
+              </div>
+            </div>
+            <div class="p-4 pt-2 border-t bg-slate-50/60">
+              <div class="flex justify-between items-end mb-2">
+                <div>
+                  <span class="text-xs font-bold text-slate-500 block">${priceLabel}:</span>
+                  <span class="text-xl font-extrabold text-emerald-600">${activePrice} $</span>
+                </div>
+                <button onclick="openProductHistory(${p.id})" class="text-[11px] bg-amber-100 hover:bg-amber-200 text-amber-900 px-2 py-1 rounded font-semibold">
+                  <i class="fa-solid fa-clock-rotate-left ml-1"></i>من ${lastPeriod.from}
+                </button>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="addToCart(${p.id})" class="flex-1 bg-slate-900 hover:bg-amber-500 hover:text-slate-900 text-white font-bold py-2 rounded-xl text-xs transition">
+                  <i class="fa-solid fa-cart-plus ml-1"></i> أضف للسلة
+                </button>
+                <button onclick="openProductGallery(${p.id})" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-3 py-2 rounded-xl text-xs font-bold">
+                  التفاصيل
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      renderProducts();
+    }
+
+    // معرض الصور
+    function openProductGallery(id) {
+      const p = products.find(x => x.id === id);
+      if (!p) return;
+
+      document.getElementById('modalCategory').innerText = p.catName;
+      document.getElementById('modalTitle').innerText = p.name;
+      document.getElementById('modalDesc').innerText = p.desc;
+      document.getElementById('modalMainImg').src = p.images[0];
+
+      const thumbs = document.getElementById('modalThumbnails');
+      thumbs.innerHTML = '';
+      p.images.forEach((imgUrl, idx) => {
+        thumbs.innerHTML += `
+          <img src="${imgUrl}" onclick="document.getElementById('modalMainImg').src='${imgUrl}'" class="w-16 h-16 object-cover rounded-lg cursor-pointer border bg-white ${idx === 0 ? 'thumb-active' : ''}">
+        `;
+      });
+
+      const activePrice = getActivePrice(p);
+      const priceLabel = getActivePriceLabel();
+      document.getElementById('modalPriceBox').innerHTML = `
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-bold text-slate-600">${priceLabel}:</span>
+          <span class="text-2xl font-extrabold text-emerald-600">${activePrice} $</span>
+        </div>
+      `;
+
+      document.getElementById('modalAddBtn').onclick = () => {
+        addToCart(p.id);
+        closeModal('productModal');
+      };
+
+      openModal('productModal');
+    }
+
+    function openFullImage() {
+      window.open(document.getElementById('modalMainImg').src, '_blank');
+    }
+
+    // نظام التسجيل والقبول الإلزامي للمدير
+    function switchSubTab(tab) {
+      if (tab === 'register') {
+        document.getElementById('subRegisterForm').classList.remove('hidden');
+        document.getElementById('subLoginForm').classList.add('hidden');
+        document.getElementById('tabRegBtn').className = 'bg-white text-slate-900 py-2 rounded-lg shadow-sm';
+        document.getElementById('tabLoginBtn').className = 'text-slate-600 py-2 rounded-lg';
+      } else {
+        document.getElementById('subRegisterForm').classList.add('hidden');
+        document.getElementById('subLoginForm').classList.remove('hidden');
+        document.getElementById('tabLoginBtn').className = 'bg-white text-slate-900 py-2 rounded-lg shadow-sm';
+        document.getElementById('tabRegBtn').className = 'text-slate-600 py-2 rounded-lg';
+      }
+    }
+
+    function toggleSubRoleFields() {
+      const role = document.querySelector('input[name="subRole"]:checked').value;
+      const shopBox = document.getElementById('shopExtraFields');
+      if (role === 'shop') shopBox.classList.remove('hidden');
+      else shopBox.classList.add('hidden');
+    }
+
+    function registerSubscriber() {
+      const role = document.querySelector('input[name="subRole"]:checked').value;
+      const fullName = document.getElementById('regFullName').value.trim();
+      const address = document.getElementById('regAddress').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const password = document.getElementById('regPassword').value.trim();
+      const shopName = document.getElementById('regShopName').value.trim();
+      const verifyPhone = document.getElementById('regShopVerifyPhone').value.trim();
+
+      if (!fullName || !address || !phone || !password) {
+        return alert('يرجى ملء الاسم والعنوان ورقم الهاتف وكلمة السر.');
+      }
+      if (role === 'shop' && (!shopName || !verifyPhone)) {
+        return alert('يجب إدخال اسم المحل ورقم للتأكيد لصاحب المحل.');
+      }
+
+      // الجميع بانتظار موافقة المدير حصرياً
+      const newSub = {
+        id: Date.now(),
+        role,
+        fullName,
+        shopName: role === 'shop' ? shopName : '-',
+        verifyPhone: role === 'shop' ? verifyPhone : '-',
+        address,
+        phone,
+        password,
+        status: 'pending' // معلق بانتظار المدير
+      };
+
+      subscribers.push(newSub);
+      saveDataToStorage();
+      renderSubscribersAdminTable();
+
+      alert('تم إرسال طلب اشتراكك بنجاح! حسابك الآن بانتظار الموافقة والتأكيد من مدير النظام ليتم تفعيله.');
+      closeModal('subscriberModal');
+    }
+
+    function loginSubscriber() {
+      const phone = document.getElementById('loginPhoneInput').value.trim();
+      const password = document.getElementById('loginPasswordInput').value.trim();
+      const sub = subscribers.find(s => s.phone === phone && s.password === password);
+
+      if (!sub) return alert('رقم الهاتف أو كلمة السر غير صحيحة!');
+      if (sub.status === 'pending') return alert('حسابك قيد المراجعة وبانتظار ضغط زر القبول من مدير المنصة.');
+
+      currentSubscriber = sub;
+      updateSubscriberMenuState();
+      renderProducts();
+      updateCartUI();
+      closeModal('subscriberModal');
+      alert(`مرحباً بك ${sub.fullName}! تم تفعيل حسابك بنجاح.`);
+    }
+
+    function logoutSubscriber() {
+      currentSubscriber = null;
+      updateSubscriberMenuState();
+      renderProducts();
+      updateCartUI();
+      document.getElementById('topDropdownMenu').classList.add('hidden');
+    }
+
+    function updateSubscriberMenuState() {
+      const box = document.getElementById('subActiveBox');
+      if (currentSubscriber && currentSubscriber.status === 'approved') {
+        box.classList.remove('hidden');
+        document.getElementById('subActiveName').innerText = currentSubscriber.fullName;
+        document.getElementById('subActiveRole').innerText = currentSubscriber.role === 'installer' ? 'فني مركّب معتمد' : `صاحب محل: ${currentSubscriber.shopName}`;
+        document.getElementById('orderCustName').value = currentSubscriber.fullName;
+        document.getElementById('orderCustAddress').value = currentSubscriber.address;
+        document.getElementById('orderCustPhone').value = currentSubscriber.phone;
+      } else {
+        box.classList.add('hidden');
+      }
+    }
+
+    // جدول المدير مع زر القبول
+    function renderSubscribersAdminTable() {
+      const tbody = document.getElementById('subscribersTableBody');
+      const badge = document.getElementById('pendingBadge');
+      const menuCount = document.getElementById('menuPendingCount');
+      tbody.innerHTML = '';
+
+      let pendingCount = 0;
+      subscribers.forEach(s => {
+        if (s.status === 'pending') pendingCount++;
+        const roleBadge = s.role === 'shop'
+          ? '<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">صاحب محل</span>'
+          : '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">فني مركّب</span>';
+
+        const statusBadge = s.status === 'approved'
+          ? '<span class="bg-emerald-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">مقبول ومفعّل</span>'
+          : '<span class="bg-amber-500 text-slate-900 px-2 py-0.5 rounded text-[10px] font-bold">بانتظار قبول المدير</span>';
+
+        const actionBtn = s.status === 'pending'
+          ? `<button onclick="approveSubscriber(${s.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded font-bold shadow">✔ قبول وتفعيل</button>`
+          : `<button onclick="deleteSubscriber(${s.id})" class="bg-red-100 text-red-700 px-2 py-1 rounded font-bold">حذف</button>`;
+
+        tbody.innerHTML += `
+          <tr class="border-b">
+            <td class="p-2 border">${roleBadge}</td>
+            <td class="p-2 border font-bold">${s.fullName}</td>
+            <td class="p-2 border">${s.shopName !== '-' ? `${s.shopName}<br><span class="text-slate-500">تأكيد: ${s.verifyPhone}</span>` : '-'}</td>
+            <td class="p-2 border">${s.address}</td>
+            <td class="p-2 border font-mono">${s.phone}</td>
+            <td class="p-2 border">${statusBadge}</td>
+            <td class="p-2 border text-center">${actionBtn}</td>
+          </tr>
+        `;
+      });
+
+      if (pendingCount > 0) {
+        badge.innerText = pendingCount;
+        menuCount.innerText = pendingCount;
+        badge.classList.remove('hidden');
+        menuCount.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+        menuCount.classList.add('hidden');
+      }
+    }
+
+    function approveSubscriber(id) {
+      const sub = subscribers.find(s => s.id === id);
+      if (sub) {
+        sub.status = 'approved';
+        saveDataToStorage();
+        renderSubscribersAdminTable();
+        alert(`تم قبول وتفعيل حساب المشترك (${sub.fullName}) بنجاح!`);
+      }
+    }
+
+    function deleteSubscriber(id) {
+      subscribers = subscribers.filter(s => s.id !== id);
+      saveDataToStorage();
+      renderSubscribersAdminTable();
+    }
+
+    // أرشيف الأسعار
+    function initSelectBoxes() {
+      const hSelect = document.getElementById('historyProdSelect');
+      const eSelect = document.getElementById('editProdSelect');
+      hSelect.innerHTML = '';
+      eSelect.innerHTML = '';
+
+      products.forEach(p => {
+        hSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+        eSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+      });
+
+      document.getElementById('editEffectiveDate').valueAsDate = new Date();
+      document.getElementById('historyDateQuery').valueAsDate = new Date();
+      loadProductForEdit();
+      renderPriceHistoryPeriods();
+    }
+
+    function openProductHistory(prodId) {
+      document.getElementById('historyProdSelect').value = prodId;
+      renderPriceHistoryPeriods();
+      openModal('historyModal');
+    }
+
+    function renderPriceHistoryPeriods() {
+      const prodId = parseInt(document.getElementById('historyProdSelect').value);
+      const queryDate = document.getElementById('historyDateQuery').value;
+      const p = products.find(x => x.id === prodId);
+      if (!p) return;
+
+      const tbody = document.getElementById('historyPeriodsBody');
+      tbody.innerHTML = '';
+      let matchedPeriod = p.pricePeriods[p.pricePeriods.length - 1];
+
+      p.pricePeriods.forEach((period, index) => {
+        const isCurrent = index === p.pricePeriods.length - 1;
+        if (queryDate && queryDate >= period.from && (isCurrent || queryDate <= period.to)) {
+          matchedPeriod = period;
+        }
+        tbody.innerHTML += `
+          <tr class="border-b ${isCurrent ? 'bg-emerald-50 font-bold' : ''}">
+            <td class="p-2 border">من <span class="text-blue-700">${period.from}</span> إلى <span class="text-emerald-700">${period.to}</span></td>
+            <td class="p-2 border">${period.retail} $</td>
+            <td class="p-2 border text-blue-700">${period.installer} $</td>
+            <td class="p-2 border text-emerald-700">${period.shop} $</td>
+            <td class="p-2 border">${isCurrent ? 'السعر الحالي' : 'سابق'}</td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('historyQueryResult').innerHTML = `
+        السعر في تاريخ (${queryDate || 'اليوم'}): المفرق: ${matchedPeriod.retail}$ | المركّب: ${matchedPeriod.installer}$ | المحل: ${matchedPeriod.shop}$
+      `;
+    }
+
+    function loadProductForEdit() {
+      const prodId = parseInt(document.getElementById('editProdSelect').value);
+      const p = products.find(x => x.id === prodId);
+      if (!p) return;
+      document.getElementById('editRetailPrice').value = p.prices.retail;
+      document.getElementById('editInstallerPrice').value = p.prices.installer;
+      document.getElementById('editShopPrice').value = p.prices.shop;
+    }
+
+    function updateProductPriceWithPeriod() {
+      const prodId = parseInt(document.getElementById('editProdSelect').value);
+      const p = products.find(x => x.id === prodId);
+      const r = parseFloat(document.getElementById('editRetailPrice').value);
+      const ins = parseFloat(document.getElementById('editInstallerPrice').value);
+      const shp = parseFloat(document.getElementById('editShopPrice').value);
+      const newDate = document.getElementById('editEffectiveDate').value;
+
+      if (!newDate || isNaN(r) || isNaN(ins) || isNaN(shp)) return alert('يرجى تعبئة الأسعار والتاريخ.');
+
+      if (p.pricePeriods.length > 0) {
+        p.pricePeriods[p.pricePeriods.length - 1].to = newDate;
+      }
+      p.pricePeriods.push({ from: newDate, to: 'الآن (السعر الحالي)', retail: r, installer: ins, shop: shp });
+      p.prices = { retail: r, installer: ins, shop: shp };
+
+      saveDataToStorage();
+      renderProducts();
+      renderPriceHistoryPeriods();
+      alert('تم تحديث السعر وتوثيق الفترة التاريخية!');
+    }
+
+    function addNewProduct() {
+      const name = document.getElementById('newProdName').value.trim();
+      const cat = document.getElementById('newProdCat').value;
+      const desc = document.getElementById('newProdDesc').value.trim();
+      const r = parseFloat(document.getElementById('newProdRetail').value);
+      const ins = parseFloat(document.getElementById('newProdInstaller').value);
+      const shp = parseFloat(document.getElementById('newProdShop').value);
+      const textLinks = document.getElementById('newProdImgLinks').value.trim();
+
+      if (!name || isNaN(r) || isNaN(ins) || isNaN(shp)) return alert('يرجى تعبئة اسم المنتج والأسعار.');
+
+      const catNames = { solar: 'طاقة شمسية', cctv: 'كاميرات مراقبة', alarm: 'إنذار مبكر' };
+      const today = new Date().toISOString().split('T')[0];
+      const imgs = textLinks ? textLinks.split(',').map(s => s.trim()).filter(Boolean) : ['https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600'];
+
+      products.push({
+        id: Date.now(),
+        category: cat,
+        catName: catNames[cat],
+        name,
+        desc: desc || 'منتج مكفول.',
+        prices: { retail: r, installer: ins, shop: shp },
+        images: imgs,
+        pricePeriods: [{ from: today, to: 'الآن (السعر الحالي)', retail: r, installer: ins, shop: shp }]
+      });
+
+      saveDataToStorage();
+      initSelectBoxes();
+      renderProducts();
+      alert('تمت إضافة المنتج بنجاح!');
+    }
+
+    function applyLogoFromText() {
+      const val = document.getElementById('adminLogoUrl').value.trim();
+      if (!val) return alert('أدخل رابط أو اسم صورة الشعار.');
+      storeSettings.logo = val;
+      document.getElementById('headerLogo').src = val;
+      saveDataToStorage();
+      alert('تم تطبيق الشعار بنجاح!');
+    }
+
+    function loadSettingsToUI() {
+      document.getElementById('headerTitle').innerText = storeSettings.name;
+      document.getElementById('headerLogo').src = storeSettings.logo;
+      document.getElementById('adminPasswordInput').value = storeSettings.adminPassword;
+      document.getElementById('adminStoreName').value = storeSettings.name;
+      document.getElementById('adminPhone').value = storeSettings.phone;
+      document.getElementById('adminLogoUrl').value = storeSettings.logo.startsWith('data:') ? '' : storeSettings.logo;
+      document.getElementById('adminShamCash').value = storeSettings.shamCash;
+      document.getElementById('adminMasari').value = storeSettings.masari;
+      document.getElementById('adminOtherPay').value = storeSettings.otherPay;
+    }
+
+    function saveStoreSettings() {
+      const newAdminPass = document.getElementById('adminPasswordInput').value.trim();
+      if (newAdminPass) storeSettings.adminPassword = newAdminPass;
+
+      storeSettings.name = document.getElementById('adminStoreName').value;
+      storeSettings.phone = document.getElementById('adminPhone').value;
+      storeSettings.shamCash = document.getElementById('adminShamCash').value;
+      storeSettings.masari = document.getElementById('adminMasari').value;
+      storeSettings.otherPay = document.getElementById('adminOtherPay').value;
+
+      saveDataToStorage();
+      loadSettingsToUI();
+      alert('تم حفظ إعدادات النظام وكلمة سر المدير بنجاح!');
+    }
+
+    // السلة
+    function addToCart(id) {
+      const existing = cart.find(i => i.id === id);
+      if (existing) existing.qty += 1;
+      else cart.push({ id, qty: 1 });
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      let total = 0, count = 0;
+      const list = document.getElementById('cartItemsList');
+      list.innerHTML = '';
+
+      cart.forEach((item, idx) => {
+        const p = products.find(x => x.id === item.id);
+        if (!p) return;
+        const price = getActivePrice(p);
+        const sub = price * item.qty;
+        total += sub;
+        count += item.qty;
+
+        list.innerHTML += `
+          <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border text-xs">
+            <div>
+              <div class="font-bold text-slate-800">${p.name}</div>
+              <div class="text-slate-500">${price} $ × ${item.qty} = <strong class="text-emerald-600">${sub} $</strong></div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="changeQty(${idx}, -1)" class="bg-slate-200 w-6 h-6 rounded font-bold">-</button>
+              <span class="font-bold">${item.qty}</span>
+              <button onclick="changeQty(${idx}, 1)" class="bg-slate-200 w-6 h-6 rounded font-bold">+</button>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById('cartCount').innerText = count;
+      document.getElementById('bottomTotal').innerText = total + ' $';
+      document.getElementById('cartTotalAmount').innerText = total + ' $';
+    }
+
+    function changeQty(idx, delta) {
+      cart[idx].qty += delta;
+      if (cart[idx].qty <= 0) cart.splice(idx, 1);
+      updateCartUI();
+    }
+
+    function togglePaymentBox() {
+      const method = document.getElementById('paymentMethod').value;
+      const box = document.getElementById('payInstructionBox');
+      const txt = document.getElementById('payAccountText');
+      if (method.includes('شام كاش')) {
+        box.classList.remove('hidden');
+        txt.innerText = 'حساب شام كاش: ' + storeSettings.shamCash;
+      } else if (method.includes('مصاري')) {
+        box.classList.remove('hidden');
+        txt.innerText = 'محفظة مصاري: ' + storeSettings.masari;
+      } else if (method.includes('حوالة')) {
+        box.classList.remove('hidden');
+        txt.innerText = 'بيانات التحويل: ' + storeSettings.otherPay;
+      } else {
+        box.classList.add('hidden');
+      }
+    }
+
+    function sendWhatsAppOrder() {
+      if (cart.length === 0) return alert('السلة فارغة!');
+      const name = document.getElementById('orderCustName').value || 'غير محدد';
+      const address = document.getElementById('orderCustAddress').value || 'غير محدد';
+      const phone = document.getElementById('orderCustPhone').value || 'غير محدد';
+      const payMethod = document.getElementById('paymentMethod').value;
+      const ref = document.getElementById('transferNumber').value;
+
+      const userType = currentSubscriber && currentSubscriber.status === 'approved'
+        ? (currentSubscriber.role === 'installer' ? 'مشترك: فني مركّب' : `مشترك: صاحب محل (${currentSubscriber.shopName})`)
+        : 'زبون مفرق';
+
+      let msg = `*طلب جديد - ${storeSettings.name}*\n`;
+      msg += `--------------------------------\n`;
+      msg += `*الفئة:* ${userType}\n`;
+      msg += `*الاسم:* ${name}\n`;
+      msg += `*العنوان:* ${address}\n`;
+      msg += `*الهاتف:* ${phone}\n`;
+      msg += `*طريقة الدفع:* ${payMethod}\n`;
+      if (ref) msg += `*رقم إشعار التحويل:* ${ref}\n`;
+      msg += `--------------------------------\n*الطلبيات:*\n`;
+
+      let total = 0;
+      cart.forEach(item => {
+        const p = products.find(x => x.id === item.id);
+        const price = getActivePrice(p);
+        const sub = price * item.qty;
+        total += sub;
+        msg += `• ${p.name} (العدد: ${item.qty}) = ${sub} $\n`;
+      });
+
+      msg += `--------------------------------\n*المجموع:* ${total} $\n`;
+      window.open(`https://wa.me/${storeSettings.phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function toggleAdminView() {
+      document.getElementById('storeView').classList.toggle('hidden');
+      document.getElementById('adminView').classList.toggle('hidden');
+    }
+
+    function openModal(id) {
+      if (id === 'qrModal') {
+        document.getElementById('platformQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`;
+        document.getElementById('qrStoreName').innerText = storeSettings.name;
+      }
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    // التشغيل الأولي
+    renderProducts();
+    renderSubscribersAdminTable();
+    initSelectBoxes();
+    togglePaymentBox();
+  </script>
+</body>
+</html>
